@@ -1,13 +1,11 @@
 package cz.muni.fi.pb162.hw02.impl;
 
-import cz.muni.fi.pb162.hw02.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
