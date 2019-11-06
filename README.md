@@ -46,16 +46,6 @@ The assignment project contains a dependency definition for a http client librar
 
 The docs for this library cant be found on [OkHttp web page](https://square.github.io/okhttp/). You are encouraged to use this library -- although you don't have to. 
 
-   
-### Canonical form of URL
-
-- Port is omitted if it is the default port for given protocol 
-- No trailing slashes
-- Relative path segments referring to current or parent directory are resolved
-- Order of query parameters is fixed
-
-**URLs with are equal if and only if their Canonical form is Equal**
-
 ### Evaluation
 The maximum number of points for this assignment is **9**.
 
