@@ -1,8 +1,8 @@
 package cz.muni.fi.pb162.hw02.impl;
 
+import cz.muni.fi.pb162.hw02.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,9 +11,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
+import static cz.muni.fi.pb162.hw02.TestUtils.prefix;
 
 /**
  *
@@ -56,11 +55,17 @@ public class CrawlerTest {
     @Test
     public void shouldGetListOfLinks() {
         List<String> index = crawler.crawl("http://localhost:8080/t01/web2.html");
-        Assertions.assertThat(index).containsExactlyInAnyOrder("http://localhost:8080/trpaplaneta.html", "http://localhost:8080/web1.html");
+        String[] expected = prefix("http://localhost:8080/t01/", "trpaplaneta.html", "web1.html");
+        Assertions.assertThat(index).containsExactlyInAnyOrder(expected);
     }
 
     @Test
-    public void shouldGetCompleteIndex() {
+    public void shouldGetCompleteIndexWithoutCycle() {
+
+    }
+
+    @Test
+    public void shouldGetCompleteIndexWithCycle() {
         Map<String, List<String>> index = crawler.crawlAll("http://localhost:8080/t01/web2.html");
         String[] expected = prefix(
                 "http://localhost:8080/t01/",
@@ -69,17 +74,8 @@ public class CrawlerTest {
         Assertions.assertThat(index.keySet()).containsExactlyInAnyOrder(expected);
     }
 
-    private String[] prefix(String prefix, String... values) {
-        return Arrays.stream(values).map(s -> prefix + s).toArray(String[]::new);
-    }
-
     @Test
     public void shouldGetCompleteIndexWithSelfReference() {
-
-    }
-
-    @Test
-    public void shouldGetCompleteIndexWithCycle() {
 
     }
 
