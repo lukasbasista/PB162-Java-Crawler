@@ -1,6 +1,5 @@
 package cz.muni.fi.pb162.hw02.impl;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;

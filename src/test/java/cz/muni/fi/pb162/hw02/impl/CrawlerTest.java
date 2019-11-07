@@ -1,5 +1,6 @@
 package cz.muni.fi.pb162.hw02.impl;
 
+import cz.muni.fi.pb162.hw02.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -7,9 +8,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static cz.muni.fi.pb162.hw02.TestUtils.buildIndex;
 import static cz.muni.fi.pb162.hw02.TestUtils.prefix;
 
 /**
@@ -73,8 +76,10 @@ public class CrawlerTest {
     }
 
     @Test
-    public void shouldGetCompleteIndexWithSelfReference() {
-
+    public void shouldGetListWithSelfReference() {
+        List<String> index = crawler.crawl("http://localhost:8080/t01/trpaplaneta.html");
+        String[] expected = prefix("http://localhost:8080/t01/", "trpaplaneta.html", "aloe.html");
+        Assertions.assertThat(index).containsExactlyInAnyOrder(expected);
     }
 
     @Test
@@ -95,12 +100,48 @@ public class CrawlerTest {
 
     @Test
     public void shouldBuildReverseIndex() {
+        Map<String, List<String>> index = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe: cirok",
+                "bert: opium trpaplaneta",
+                "cirok: aloe web1 bert",
+                "opium: bert cirok aloe opium"
+
+        );
+        Map<String, List<String>> expected = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe:  cirok opium",
+                "bert:  cirok opium",
+                "cirok: aloe opium",
+                "opium: bert opium"
+        );
+        Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
+
+        expected.forEach( (k, v) -> {
+            Assertions.assertThat(reverseIndex.keySet()).contains(k);
+            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
+        });
 
     }
 
     @Test
     public void shouldBuildReverseIndexByCrawl() {
+        Map<String, List<String>> expected = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe:  cirok opium trpaplaneta",
+                "bert:  cirok opium",
+                "cirok: aloe opium",
+                "opium: bert opium",
+                "web1:  cirok web2",
+                "web2: web1",
+                "trpaplaneta: bert trpaplaneta web2"
+        );
+        Map<String, List<String>> reverseIndex = crawler.crawlReverse("http://localhost:8080/t01/web2.html");
 
+        expected.forEach( (k, v) -> {
+            Assertions.assertThat(reverseIndex.keySet()).contains(k);
+            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
+        });
     }
 
 }
