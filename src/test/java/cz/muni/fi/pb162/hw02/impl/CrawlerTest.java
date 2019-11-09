@@ -1,19 +1,17 @@
 package cz.muni.fi.pb162.hw02.impl;
 
-import cz.muni.fi.pb162.hw02.TestUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static cz.muni.fi.pb162.hw02.TestUtils.buildIndex;
 import static cz.muni.fi.pb162.hw02.TestUtils.prefix;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -44,20 +42,20 @@ public class CrawlerTest {
     @Test
     public void shouldProcessEmptyPage() {
         List<String> index = crawler.crawl("http://localhost:8080/t00/web1.html");
-        Assertions.assertThat(index).isEmpty();
+        assertThat(index).isEmpty();
     }
 
     @Test
     public void shouldHandleInvalidUrl() {
         List<String> index = crawler.crawl("http://localhost:8080/tXX/web1.html");
-        Assertions.assertThat(index).isEmpty();
+        assertThat(index).isEmpty();
     }
 
     @Test
     public void shouldGetListOfLinks() {
         List<String> index = crawler.crawl("http://localhost:8080/t01/web2.html");
         String[] expected = prefix("http://localhost:8080/t01/", "trpaplaneta.html", "web1.html");
-        Assertions.assertThat(index).containsExactlyInAnyOrder(expected);
+        assertThat(index).containsExactlyInAnyOrder(expected);
     }
 
     @Test
@@ -67,20 +65,20 @@ public class CrawlerTest {
                 "http://localhost:8080/t01/",
                 "aloe.html", "bert.html", "cirok.html", "opium.html", "trpaplaneta.html", "web1.html", "web2.html"
         );
-        Assertions.assertThat(index.keySet()).containsExactlyInAnyOrder(expected);
+        assertThat(index.keySet()).containsExactlyInAnyOrder(expected);
     }
 
     @Test
     public void shouldGetListWithSelfReference() {
         List<String> index = crawler.crawl("http://localhost:8080/t01/trpaplaneta.html");
         String[] expected = prefix("http://localhost:8080/t01/", "trpaplaneta.html", "aloe.html");
-        Assertions.assertThat(index).containsExactlyInAnyOrder(expected);
+        assertThat(index).containsExactlyInAnyOrder(expected);
     }
 
     @Test
     public void shouldBuildEmptyReverseIndexFromEmptyIndex() {
         Map<String, List<String>> reverse = crawler.reverseIndex(Collections.emptyMap());
-        Assertions.assertThat(reverse).isEmpty();
+        assertThat(reverse).isEmpty();
     }
 
     @Test
@@ -92,11 +90,7 @@ public class CrawlerTest {
                 "opium: aloe cirok opium"
         );
         Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
-
-        index.forEach( (k, v) -> {
-            Assertions.assertThat(reverseIndex.keySet()).contains(k);
-            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
-        });
+        assertIndex(index, reverseIndex);
     }
 
     @Test
@@ -119,12 +113,7 @@ public class CrawlerTest {
                 "web1: cirok"
         );
         Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
-
-        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
-        expected.forEach( (k, v) -> {
-            Assertions.assertThat(reverseIndex.keySet()).contains(k);
-            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
-        });
+        assertIndex(expected, reverseIndex);
     }
 
     @Test
@@ -142,12 +131,7 @@ public class CrawlerTest {
                 "moron:"
         );
         Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
-
-        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
-        expected.forEach( (k, v) -> {
-            Assertions.assertThat(reverseIndex.keySet()).contains(k);
-            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
-        });
+        assertIndex(expected, reverseIndex);
     }
 
     @Test
@@ -163,11 +147,14 @@ public class CrawlerTest {
                 "trpaplaneta: bert trpaplaneta web2"
         );
         Map<String, List<String>> reverseIndex = crawler.crawlReverse("http://localhost:8080/t01/web2.html");
+        assertIndex(expected, reverseIndex);
+    }
 
-        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
+    private void assertIndex(Map<String, List<String>> expected, Map<String, List<String>> actual) {
+        assertThat(actual.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
         expected.forEach( (k, v) -> {
-            Assertions.assertThat(reverseIndex.keySet()).contains(k);
-            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
+            assertThat(actual.keySet()).contains(k);
+            assertThat(actual.get(k)).containsExactlyInAnyOrderElementsOf(v);
         });
     }
 
