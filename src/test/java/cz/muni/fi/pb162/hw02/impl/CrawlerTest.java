@@ -61,11 +61,6 @@ public class CrawlerTest {
     }
 
     @Test
-    public void shouldGetCompleteIndexWithoutCycle() {
-
-    }
-
-    @Test
     public void shouldGetCompleteIndexWithCycle() {
         Map<String, List<String>> index = crawler.crawlAll("http://localhost:8080/t01/web2.html");
         String[] expected = prefix(
@@ -89,13 +84,19 @@ public class CrawlerTest {
     }
 
     @Test
-    public void shouldBuildEmptyReverseIndex() {
-
-    }
-
-    @Test
     public void shouldBuildReverseIndexFromFullyLinkedIndex() {
+        Map<String, List<String>> index = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe: aloe cirok opium",
+                "cirok: aloe cirok opium",
+                "opium: aloe cirok opium"
+        );
+        Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
 
+        index.forEach( (k, v) -> {
+            Assertions.assertThat(reverseIndex.keySet()).contains(k);
+            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
+        });
     }
 
     @Test
@@ -113,19 +114,44 @@ public class CrawlerTest {
                 "aloe:  cirok opium",
                 "bert:  cirok opium",
                 "cirok: aloe opium",
-                "opium: bert opium"
+                "opium: bert opium",
+                "trpaplaneta: bert",
+                "web1: cirok"
         );
         Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
 
+        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
         expected.forEach( (k, v) -> {
             Assertions.assertThat(reverseIndex.keySet()).contains(k);
             Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
         });
-
     }
 
     @Test
-    public void shouldBuildReverseIndexByCrawl() {
+    public void shouldBuildReverseIndexIncludingUnreachable() {
+        Map<String, List<String>> index = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe: cirok",
+                "cirok: aloe",
+                "moron: aloe cirok"
+        );
+        Map<String, List<String>> expected = buildIndex(
+                "http://localhost:8080/t01/", ".html",
+                "aloe:  cirok moron",
+                "cirok: aloe moron",
+                "moron:"
+        );
+        Map<String, List<String>> reverseIndex = crawler.reverseIndex(index);
+
+        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
+        expected.forEach( (k, v) -> {
+            Assertions.assertThat(reverseIndex.keySet()).contains(k);
+            Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
+        });
+    }
+
+    @Test
+    public void shouldCrawlReverseIndexWithoutUnreachable() {
         Map<String, List<String>> expected = buildIndex(
                 "http://localhost:8080/t01/", ".html",
                 "aloe:  cirok opium trpaplaneta",
@@ -138,6 +164,7 @@ public class CrawlerTest {
         );
         Map<String, List<String>> reverseIndex = crawler.crawlReverse("http://localhost:8080/t01/web2.html");
 
+        Assertions.assertThat(reverseIndex.keySet()).containsExactlyInAnyOrderElementsOf(expected.keySet());
         expected.forEach( (k, v) -> {
             Assertions.assertThat(reverseIndex.keySet()).contains(k);
             Assertions.assertThat(reverseIndex.get(k)).containsExactlyInAnyOrderElementsOf(v);
