@@ -25,7 +25,7 @@ public class SimpleHttpClient {
 
     /**
      * Creates new instance with given {@link OkHttpClient}
-     * @param httpClient
+     * @param httpClient underlying {@link OkHttpClient} instance
      */
     public SimpleHttpClient(OkHttpClient httpClient) {
         this.httpClient = httpClient;
