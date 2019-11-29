@@ -18,8 +18,21 @@ import java.util.regex.Pattern;
  */
 public class Crawler implements SmartCrawler {
 
-
     private SimpleHttpClient client = new SimpleHttpClient();
+    private static final Pattern A_TAG = Pattern.compile("<a(.+?)</a>", Pattern.DOTALL);
+
+    /**
+     * @param str html document as string
+     * @return List of a tag values
+     */
+    private static List<String> getTagValues(final String str) {
+        final List<String> tagValues = new ArrayList<>();
+        final Matcher matcher = A_TAG.matcher(str);
+        while (matcher.find()) {
+            tagValues.add(matcher.group());
+        }
+        return tagValues;
+    }
 
     @Override
     public List<String> crawl(String url) {
@@ -30,9 +43,10 @@ public class Crawler implements SmartCrawler {
             e.printStackTrace();
         }
         List<String> tags = getTagValues(html);
-        Pattern p = Pattern.compile("href=\"([^\"]*)\"", Pattern.DOTALL);
         List<String> urls = new ArrayList<>();
-        for (String tag: tags) {
+        Pattern p = Pattern.compile("href=\"([^\"]*)\"", Pattern.DOTALL);
+
+        for (String tag : tags) {
             Matcher m = p.matcher(tag);
             if (m.find()) {
                 urls.add(m.group(1));
@@ -46,18 +60,17 @@ public class Crawler implements SmartCrawler {
     public Map<String, List<String>> crawlAll(String url) {
         Map<String, List<String>> result = new HashMap<>();
         List<String> urls = crawl(url);
-        Boolean x = false;
         Set<String> checked = new HashSet<>();
         for (String link : urls) {
             Set<String> unchecked = new HashSet<>(crawl(link));
-            x = unchecked.isEmpty();
+            Boolean x = unchecked.isEmpty();
             while (!x) {
-                Set<String> k = new HashSet<>();
+                Set<String> temp = new HashSet<>();
                 for (String a : unchecked) {
-                    k.addAll(crawl(a));
+                    temp.addAll(crawl(a));
                     checked.add(a);
                 }
-                unchecked.addAll(k);
+                unchecked.addAll(temp);
                 unchecked.removeAll(checked);
                 x = unchecked.isEmpty();
             }
@@ -92,21 +105,5 @@ public class Crawler implements SmartCrawler {
 
         }
         return result;
-    }
-
-    private static final Pattern A_TAG = Pattern.compile("<a(.+?)</a>", Pattern.DOTALL);
-
-    /**
-     *
-     * @param str asd
-     * @return asd
-     */
-    private static List<String> getTagValues(final String str) {
-        final List<String> tagValues = new ArrayList<>();
-        final Matcher matcher = A_TAG.matcher(str);
-        while (matcher.find()) {
-            tagValues.add(matcher.group());
-        }
-        return tagValues;
     }
 }
